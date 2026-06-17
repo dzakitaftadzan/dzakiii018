@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request; // <-- TAMBAHKAN BARIS INI
 use App\Services\ItemService;
 use App\Http\Requests\StoreItemRequest;
 use App\Http\Requests\UpdateItemRequest;
@@ -14,8 +15,16 @@ class ItemController extends BaseController {
         $this->svc = $svc;
     }
 
-    public function index() {
-        return $this->success($this->svc->all(), 'Berhasil menarik semua data Item');
+    public function index(Request $request) {
+        // Ambil semua data dari service, lalu filter jika ada category_id
+        $items = $this->svc
+            ->all()
+            ->filter(fn($item) => 
+                !$request->category_id || $item->category_id == $request->category_id
+            );
+            
+        // Gunakan ->values() agar format array JSON tetap rapi
+        return $this->success($items->values(), 'Berhasil menarik data Item');
     }
 
     public function store(StoreItemRequest $req) {
